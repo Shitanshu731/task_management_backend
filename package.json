@@ -1,0 +1,16 @@
+{
+  "name": "task-management-backend",
+  "version": "1.0.0",
+  "description": "Task Management API with WebSocket support",
+  "main":  "src/server.js",
+  "scripts": {
+    "start":  "node src/server.js",
+    "dev": "nodemon src/server.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": ["express", "socket.io", "postgresql"],
+  "author": "",
+  "license": "ISC"
+}
