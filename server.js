@@ -4,8 +4,8 @@ const { Server } = require("socket.io");
 const cors = require("cors");
 require("dotenv").config();
 
-const taskRoutes = require("./routes/taskRoutes");
-const pool = require("./config/database");
+const taskRoutes = require("./src/routes/taskRoutes");
+const pool = require("./src/config/database");
 
 const app = express();
 const server = http.createServer(app);
