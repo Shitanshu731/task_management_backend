@@ -21,13 +21,17 @@ const io = new Server(server, {
   cors: corsOptions,
 });
 
+// Store connected users
+const connectedUsers = new Map();
+
 // Middleware
 app.use(cors(corsOptions));
 app.use(express.json());
 
-// Make io accessible in routes
+// Make io and connectedUsers accessible in routes
 app.use((req, res, next) => {
   req.io = io;
+  req.connectedUsers = connectedUsers;
   next();
 });
 
@@ -43,17 +47,65 @@ app.get("/health", (req, res) => {
 io.on("connection", (socket) => {
   console.log(`✅ Client connected: ${socket.id}`);
 
+  // Handle user identification
+  socket.on("user:identify", (userData) => {
+    const user = {
+      socketId: socket.id,
+      username: userData.username || `User-${socket.id.substring(0, 6)}`,
+      color: userData.color || generateRandomColor(),
+      connectedAt: new Date().toISOString(),
+    };
+
+    connectedUsers.set(socket.id, user);
+
+    // Broadcast updated user list to all clients
+    io.emit("users:list", Array.from(connectedUsers.values()));
+
+    // Notify others about new user
+    socket.broadcast.emit("user:connected", user);
+
+    console.log(`👤 User identified: ${user.username}`);
+  });
+
   socket.on("disconnect", () => {
-    console.log(`❌ Client disconnected: ${socket.id}`);
+    const user = connectedUsers.get(socket.id);
+    if (user) {
+      connectedUsers.delete(socket.id);
+
+      // Broadcast updated user list
+      io.emit("users:list", Array.from(connectedUsers.values()));
+
+      // Notify others about disconnection
+      socket.broadcast.emit("user:disconnected", user);
+
+      console.log(`❌ User disconnected: ${user.username}`);
+    } else {
+      console.log(`❌ Client disconnected: ${socket.id}`);
+    }
   });
 });
+
+// Generate random color for user avatar
+function generateRandomColor() {
+  const colors = [
+    "#6366f1",
+    "#ec4899",
+    "#10b981",
+    "#f59e0b",
+    "#ef4444",
+    "#8b5cf6",
+    "#14b8a6",
+    "#f97316",
+  ];
+  return colors[Math.floor(Math.random() * colors.length)];
+}
 
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({
     success: false,
-    error: "Something went wrong! ",
+    error: "Something went wrong!",
   });
 });
 

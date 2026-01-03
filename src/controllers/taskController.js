@@ -6,12 +6,22 @@ class TaskController {
       const { title, description, status } = req.body;
       const task = await Task.create(title, description, status);
 
+      // Get user info from socket
+      const socketId = req.headers["x-socket-id"];
+      const user = req.connectedUsers.get(socketId);
+
+      const taskWithUser = {
+        ...task,
+        created_by: user ? user.username : "Unknown User",
+        created_by_color: user ? user.color : "#6366f1",
+      };
+
       // Emit socket event for real-time update
-      req.io.emit("task:created", task);
+      req.io.emit("task:created", taskWithUser);
 
       res.status(201).json({
         success: true,
-        data: task,
+        data: taskWithUser,
       });
     } catch (error) {
       console.error("Error creating task:", error);
@@ -56,12 +66,22 @@ class TaskController {
 
       const updatedTask = await Task.update(id, updates);
 
+      // Get user info from socket
+      const socketId = req.headers["x-socket-id"];
+      const user = req.connectedUsers.get(socketId);
+
+      const taskWithUser = {
+        ...updatedTask,
+        updated_by: user ? user.username : "Unknown User",
+        updated_by_color: user ? user.color : "#6366f1",
+      };
+
       // Emit socket event for real-time update
-      req.io.emit("task:updated", updatedTask);
+      req.io.emit("task:updated", taskWithUser);
 
       res.status(200).json({
         success: true,
-        data: updatedTask,
+        data: taskWithUser,
       });
     } catch (error) {
       console.error("Error updating task:", error);
@@ -84,8 +104,16 @@ class TaskController {
         });
       }
 
+      // Get user info from socket
+      const socketId = req.headers["x-socket-id"];
+      const user = req.connectedUsers.get(socketId);
+
       // Emit socket event for real-time update
-      req.io.emit("task:deleted", { id: parseInt(id) });
+      req.io.emit("task:deleted", {
+        id: parseInt(id),
+        deleted_by: user ? user.username : "Unknown User",
+        deleted_by_color: user ? user.color : "#6366f1",
+      });
 
       res.status(200).json({
         success: true,
