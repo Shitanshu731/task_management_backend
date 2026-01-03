@@ -4,7 +4,7 @@
   "description": "Task Management API with WebSocket support",
   "main":  "src/server.js",
   "scripts": {
-    "start":  "node src/server.js",
+    "start": "node src/server. js",
     "dev": "nodemon src/server.js"
   },
   "engines": {
@@ -12,5 +12,15 @@
   },
   "keywords": ["express", "socket.io", "postgresql"],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "pg": "^8.11.3",
+    "socket.io":  "^4.6.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies":  {
+    "nodemon": "^3.0.2"
+  }
 }
